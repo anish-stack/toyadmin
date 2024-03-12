@@ -1,39 +1,41 @@
 const mongoose = require('mongoose');
 
 
-const miniLines = mongoose.Schema({
-    heading:{
-        type:String,
-        required:true
-    },
-    headPara:{
-        type:String,
-        required:true
-    },
-})
 
 const productSchema = mongoose.Schema({
-    productName:{
-        type:String,
-        required:true
+    productName: {
+        type: String,
+        required: true
     },
-    productImg:{
-        type:String,
-        required:true
+    productImg: {
+        type: [String],
+        required: true
     },
-    Sizes:{
-        type:[String],
-        required:true
+    Sizes: {
+        type: [String],
+
     },
-    BoldDesc:{
-        type:[miniLines]
+    price: {
+        type: Number,
     },
-    para:{
-        type:[String]
+    DiscountPrice: {
+        type: Number,
+    },
+    Tag: {
+        type: String
+    },
+    Description: {
+        type: String
+    },
+    Categorey: {
+        type: String
+    },
+    Keyword: {
+        type: [String]
     }
-},{ timeStamps: true })
+}, { timeStamps: true })
 
-const details = mongoose.model('Desc',productSchema);
+const Product = mongoose.model('Product', productSchema);
 
-module.exports = details
+module.exports = Product
 

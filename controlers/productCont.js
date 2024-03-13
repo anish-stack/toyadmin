@@ -59,7 +59,7 @@ exports.createProduct = async (req, res) => {
 
             // Save the new product
             await newProduct.save();
-
+            myCache.del('allProducts');
             res.status(200).json({
                 success: true,
                 data:newProduct,
@@ -263,6 +263,14 @@ exports.updateProductById = async (req, res) => {
             });
         }
 
+        // Check if there's an image file to upload
+        if (req.file) {
+            // Upload image to Cloudinary
+            const result = await cloudinary.uploader.upload(req.file.path, { resource_type: "auto" });
+            console.log("Cloudinary Upload Result:", result); // Log cloudinary upload result
+            existingProduct.productImg = result.secure_url; // Update product image URL
+        }
+
         // Update only the specified fields
         Object.keys(updates).forEach((key) => {
             existingProduct[key] = updates[key];
@@ -270,7 +278,7 @@ exports.updateProductById = async (req, res) => {
 
         // Save the updated product
         const updatedProduct = await existingProduct.save();
-
+        myCache.del('allProducts');
         res.status(200).json({
             success: true,
             data: updatedProduct,

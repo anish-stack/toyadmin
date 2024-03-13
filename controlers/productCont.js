@@ -120,19 +120,19 @@ exports.getProductByName = async (req,res) =>{
         const prodName =  req.params.prodName;
         console.log(prodName)
         if(!prodName){
-            res.status(501).json({
+            return res.status(501).json({
                 success: false,
                 message: "Please Enter data FIRST !!"
             })
         }
         const ExistingProduct = await productDesc.findOne({productName:prodName});
         if(!ExistingProduct){
-            res.status(501).json({
+            return res.status(501).json({
                 success: false,
                 message: "Product Not Available !!"
             })
         }
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data:ExistingProduct,
             message: "Data Fetched Succesfully"
@@ -145,6 +145,38 @@ exports.getProductByName = async (req,res) =>{
         })
     }
 }
+
+exports.getProductByCategoreysName = async (req,res) =>{
+    try{
+        const prodName =  req.params.prodName;
+        console.log(prodName)
+        if(!prodName){
+            return res.status(501).json({
+                success: false,
+                message: "Please Enter data FIRST !!"
+            })
+        }
+        const ExistingProduct = await productDesc.find({Categorey:prodName});
+        if(!ExistingProduct){
+            return res.status(501).json({
+                success: false,
+                message: "Product Not Available !!"
+            })
+        }
+        return res.status(200).json({
+            success: true,
+            data:ExistingProduct,
+            message: "Data Fetched Succesfully"
+        })
+    }
+    catch(error){
+        res.status(501).json({
+            success: false,
+            message: "Product Not Found !!"
+        })
+    }
+}
+
 exports.getAllCategoreyNameAndLength = async (req, res) => {
     try {
         const categoryCounts = await productDesc.aggregate([

@@ -7,7 +7,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }); 
 const route = express.Router()
 
-route.post("/create-product", upload.array('file'), createProduct);
+route.post("/create-product", createProduct);
 
 route.get("/all-products",getProduct);
 route.get("/single-product/:prodName",getProductByName);

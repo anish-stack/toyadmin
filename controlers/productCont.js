@@ -4,70 +4,67 @@ const { v4: uuidv4 } = require('uuid');
 const cloudinary = require('cloudinary').v2;
 const NodeCache = require('node-cache');
 const myCache = new NodeCache({ stdTTL: 3600 });
-
+const storage = multer.diskStorage({});
 // Configure Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_API_NAME,
     api_key: process.env.CLOUDINARY_API,
     api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
- // Configure multer for image upload
- const storage = multer.memoryStorage();
- 
- exports.createProduct = async (req, res) => {
-    try {
-        const { productName, Sizes, price, DiscountPrice, Tag, Description, Categorey, Keyword } = req.body;
-
-        if (!Description || !price || !DiscountPrice || !productName || !Categorey) {
-            return res.status(403).json({
-                success: false,
-                message: "Please Provide All Required Fields"
-            });
-        }
-
-        let productImg = ''; // Default value
-
-        // Check if there are files in the request
-        if (req.files && req.files.length > 0) {
-            // Upload images to Cloudinary
-            const uploadPromises = req.files.map(async (file) => {
-                const result = await cloudinary.uploader.upload_stream({ resource_type: 'auto' }, async (error, result) => {
-                    if (error) {
-                        console.log(error);
-                    } else {
-                        productImg = result.secure_url; // Update productImg if an image is uploaded
-                    }
-                }).end(file.buffer);
-
-                return result;
-            });
-
-            // Wait for all uploads to complete before responding
-            await Promise.all(uploadPromises);
+});
+const upload = multer({
+    storage,
+    limits: { fileSize: 1024 * 1024 * 5 }, // Limiting file size to 5MB, adjust as needed
+    fileFilter: (req, file, cb) => {
+        // Check file type, you can customize this according to your requirements
+        if (file.mimetype.startsWith('image')) {
+            cb(null, true);
         } else {
-            // Use the default image URL when no images are uploaded
-            productImg = 'https://i.ibb.co/0D0bJBL/image.png';
+            cb(new Error('Only images are allowed!'));
         }
+    },
+}).single('image');
 
-        // Create a new product
-        const newProduct = new productDesc({
-            productImg,
-            Sizes,
-            price,
-            DiscountPrice,
-            Tag,
-            Description,
-            productName,
-            Categorey,
-            Keyword
-        });
+exports.createProduct = async (req, res) => {
+    try {
+        upload(req, res, async function (err) {
+            if (err) {
+                return res.status(400).json({ success: false, message: err.message });
+            }
+            console.log("Request Body:", req.body); // Log request body
+            console.log("Uploaded File:", req.file); // Log uploaded file
 
-        // Save the new product
-        await newProduct.save();
+            const { productName, Sizes, price, DiscountPrice, Tag, Description, Categorey, Keyword } = req.body;
+            console.log(req.body)
+  
 
-        res.status(200).json({
-            success: true,
-            message: "Data Saved Successfully"
+            let productImg = ''; // Default value
+
+            if (req.file) {
+                const result = await cloudinary.uploader.upload(req.file.path, { resource_type: "auto" });
+                console.log("Cloudinary Upload Result:", result); // Log cloudinary upload result
+                productImg = result.secure_url; // Retrieve the secure URL of the uploaded image
+            }
+            // Create a new product
+            const newProduct = new productDesc({
+                productImg: productImg,
+                Sizes,
+                price,
+                DiscountPrice,
+                Tag,
+                Description,
+                productName,
+                Categorey,
+                Keyword
+            });
+
+            // Save the new product
+            await newProduct.save();
+
+            res.status(200).json({
+                success: true,
+                data:newProduct,
+                message: "Data Saved Successfully"
+            });
         });
     } catch (error) {
         console.log(error);
@@ -77,6 +74,7 @@ cloudinary.config({
         });
     }
 };
+
 exports.getProduct = async (req, res) => {
     try {
         const cachedProducts = myCache.get('allProducts');
@@ -115,18 +113,18 @@ exports.getProduct = async (req, res) => {
         });
     }
 };
-exports.getProductByName = async (req,res) =>{
-    try{
-        const prodName =  req.params.prodName;
+exports.getProductByName = async (req, res) => {
+    try {
+        const prodName = req.params.prodName;
         console.log(prodName)
-        if(!prodName){
+        if (!prodName) {
             return res.status(501).json({
                 success: false,
                 message: "Please Enter data FIRST !!"
             })
         }
-        const ExistingProduct = await productDesc.findOne({productName:prodName});
-        if(!ExistingProduct){
+        const ExistingProduct = await productDesc.findOne({ productName: prodName });
+        if (!ExistingProduct) {
             return res.status(501).json({
                 success: false,
                 message: "Product Not Available !!"
@@ -134,11 +132,11 @@ exports.getProductByName = async (req,res) =>{
         }
         return res.status(200).json({
             success: true,
-            data:ExistingProduct,
+            data: ExistingProduct,
             message: "Data Fetched Succesfully"
         })
     }
-    catch(error){
+    catch (error) {
         res.status(501).json({
             success: false,
             message: "Product Not Found !!"
@@ -146,18 +144,18 @@ exports.getProductByName = async (req,res) =>{
     }
 }
 
-exports.getProductByCategoreysName = async (req,res) =>{
-    try{
-        const prodName =  req.params.prodName;
+exports.getProductByCategoreysName = async (req, res) => {
+    try {
+        const prodName = req.params.prodName;
         console.log(prodName)
-        if(!prodName){
+        if (!prodName) {
             return res.status(501).json({
                 success: false,
                 message: "Please Enter data FIRST !!"
             })
         }
-        const ExistingProduct = await productDesc.find({Categorey:prodName});
-        if(!ExistingProduct){
+        const ExistingProduct = await productDesc.find({ Categorey: prodName });
+        if (!ExistingProduct) {
             return res.status(501).json({
                 success: false,
                 message: "Product Not Available !!"
@@ -165,11 +163,11 @@ exports.getProductByCategoreysName = async (req,res) =>{
         }
         return res.status(200).json({
             success: true,
-            data:ExistingProduct,
+            data: ExistingProduct,
             message: "Data Fetched Succesfully"
         })
     }
-    catch(error){
+    catch (error) {
         res.status(501).json({
             success: false,
             message: "Product Not Found !!"

@@ -226,7 +226,7 @@ exports.deleteProductById = async (req, res) => {
                 message: "Product not found",
             });
         }
-
+        myCache.del('allProducts');
         res.status(200).json({
             success: true,
             data: deletedProduct,

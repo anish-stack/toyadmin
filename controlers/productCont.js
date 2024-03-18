@@ -77,17 +77,7 @@ exports.createProduct = async (req, res) => {
 
 exports.getProduct = async (req, res) => {
     try {
-        const cachedProducts = myCache.get('allProducts');
-
-        if (cachedProducts) {
-            // If data is found in the cache, return it
-            return res.status(200).json({
-                success: true,
-                data: cachedProducts,
-                message: "Data Fetched Successfully from Cache",
-            });
-        }
-
+      
         // If data is not found in the cache, fetch it from the database
         const allProducts = await productDesc.find();
 
@@ -98,8 +88,7 @@ exports.getProduct = async (req, res) => {
             });
         }
 
-        // Store the fetched data in the cache with a TTL of 1 hour
-        myCache.set('allProducts', allProducts, 3600);
+      
 
         res.status(200).json({
             success: true,

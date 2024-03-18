@@ -2,8 +2,7 @@ const productDesc = require('../models/product.model')
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const cloudinary = require('cloudinary').v2;
-const NodeCache = require('node-cache');
-const myCache = new NodeCache({ stdTTL: 3600 });
+
 const storage = multer.diskStorage({});
 // Configure Cloudinary
 cloudinary.config({
@@ -78,7 +77,7 @@ exports.createProduct = async (req, res) => {
 exports.getProduct = async (req, res) => {
     try {
       
-        // If data is not found in the cache, fetch it from the database
+       
         const allProducts = await productDesc.find();
 
         if (allProducts.length <= 0) {
@@ -215,7 +214,7 @@ exports.deleteProductById = async (req, res) => {
                 message: "Product not found",
             });
         }
-        myCache.del('allProducts');
+      
         res.status(200).json({
             success: true,
             data: deletedProduct,
@@ -267,7 +266,7 @@ exports.updateProductById = async (req, res) => {
 
         // Save the updated product
         const updatedProduct = await existingProduct.save();
-        myCache.del('allProducts');
+       
         res.status(200).json({
             success: true,
             data: updatedProduct,
@@ -282,21 +281,3 @@ exports.updateProductById = async (req, res) => {
     }
 };
 
-exports.removeAllCatch = async (req, res) => {
-    try {
-        // Get all keys in the cache
-        const keys = myCache.keys();
-
-        // Iterate over the keys and delete them from the cache
-        keys.forEach(key => {
-            myCache.del(key);
-        });
-
-        // Optionally, you can return a success response
-        return res.status(200).json({ message: 'All cache entries removed successfully.' });
-    } catch (error) {
-        // Handle errors if needed
-        console.error('Error removing cache entries:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-}

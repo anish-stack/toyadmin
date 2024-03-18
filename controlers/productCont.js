@@ -292,3 +292,22 @@ exports.updateProductById = async (req, res) => {
         });
     }
 };
+
+exports.removeAllCatch = async (req, res) => {
+    try {
+        // Get all keys in the cache
+        const keys = myCache.keys();
+
+        // Iterate over the keys and delete them from the cache
+        keys.forEach(key => {
+            myCache.del(key);
+        });
+
+        // Optionally, you can return a success response
+        return res.status(200).json({ message: 'All cache entries removed successfully.' });
+    } catch (error) {
+        // Handle errors if needed
+        console.error('Error removing cache entries:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}

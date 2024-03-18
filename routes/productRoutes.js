@@ -1,5 +1,5 @@
 const express = require('express');
-const { createProduct, getProduct, getProductByName, deleteProductById, getAllCategoreyNameAndLength, updateProductById, getProductByCategoreysName, removeAllCatch } = require('../controlers/productCont');
+const { createProduct, getProduct, getProductByName, deleteProductById, getAllCategoreyNameAndLength, updateProductById, getProductByCategoreysName } = require('../controlers/productCont');
 const multer = require('multer');
 const { CreateOrder, getOrders, updateOrderStatus } = require('../controlers/Ordercontrollers');
 const { createContact, getContacts } = require('../controlers/ContactControllers');
@@ -23,7 +23,7 @@ route.post("/Update-Order",updateOrderStatus);
 
 route.post("/Contact",createContact);
 route.get("/get-contact",getContacts);
-route.get("/Clear-cache",removeAllCatch);
+
 
 
 
